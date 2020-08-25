@@ -24,11 +24,137 @@ Redis 与其他 key - value 缓存产品有以下三个特点：
 
 
 
+# 2.Redis 安装
+
+## Window 下安装
+
+**下载地址：**https://github.com/tporadowski/redis/releases。
+
+Redis 支持 32 位和 64 位。这个需要根据你系统平台的实际情况选择，这里我们下载 **Redis-x64-xxx.zip**压缩包到 C 盘，解压后，将文件夹重新命名为 **redis**。
+
+![img](https://www.runoob.com/wp-content/uploads/2014/11/3B8D633F-14CE-42E3-B174-FCCD48B11FF3.jpg)
+
+打开文件夹，内容如下：
+
+![img](https://www.runoob.com/wp-content/uploads/2014/11/C2CEBAA0-30B9-4340-8D23-78F6FEB8CBE2.png%22)
+
+打开一个 **cmd** 窗口 使用 cd 命令切换目录到 **C:\redis** 运行：
+
+```
+redis-server.exe redis.windows.conf
+```
+
+如果想方便的话，可以把 redis 的路径加到系统的环境变量里，这样就省得再输路径了，后面的那个 redis.windows.conf 可以省略，如果省略，会启用默认的。输入之后，会显示如下界面：
+
+![Redis 安装](https://www.runoob.com/wp-content/uploads/2014/11/redis-install1.png)
+
+这时候另启一个 cmd 窗口，原来的不要关闭，不然就无法访问服务端了。
+
+切换到 redis 目录下运行:
+
+```
+redis-cli.exe -h 127.0.0.1 -p 6379
+```
+
+设置键值对:
+
+```
+set myKey abc
+```
+
+取出键值对:
+
+```
+get myKey
+```
+
+![Redis 安装](https://www.runoob.com/wp-content/uploads/2014/11/redis-install2.jpg)
+
+------
+
+## Linux 下安装
+
+**下载地址：**http://redis.io/download，下载最新稳定版本。
+
+本教程使用的最新文档版本为 2.8.17，下载并安装：
+
+```
+$ wget http://download.redis.io/releases/redis-2.8.17.tar.gz
+$ tar xzf redis-2.8.17.tar.gz
+$ cd redis-2.8.17
+$ make
+```
+
+make完后 redis-2.8.17目录下会出现编译后的redis服务程序redis-server,还有用于测试的客户端程序redis-cli,两个程序位于安装目录 src 目录下：
+
+下面启动redis服务.
+
+```
+$ cd src
+$ ./redis-server
+```
+
+注意这种方式启动redis 使用的是默认配置。也可以通过启动参数告诉redis使用指定配置文件使用下面命令启动。
+
+```
+$ cd src
+$ ./redis-server ../redis.conf
+```
+
+**redis.conf** 是一个默认的配置文件。我们可以根据需要使用自己的配置文件。
+
+启动redis服务进程后，就可以使用测试客户端程序redis-cli和redis服务交互了。 比如：
+
+```
+$ cd src
+$ ./redis-cli
+redis> set foo bar
+OK
+redis> get foo
+"bar"
+```
+
+------
+
+## Ubuntu 下安装
+
+在 Ubuntu 系统安装 Redis 可以使用以下命令:
+
+```
+$sudo apt-get update
+$sudo apt-get install redis-server
+```
+
+### 启动 Redis
+
+```
+$ redis-server
+```
+
+### 查看 redis 是否启动？
+
+```
+$ redis-cli
+```
+
+以上命令将打开以下终端：
+
+```
+redis 127.0.0.1:6379>
+```
+
+127.0.0.1 是本机 IP ，6379 是 redis 服务端口。现在我们输入 PING 命令。
+
+```
+redis 127.0.0.1:6379> ping
+PONG
+```
+
+以上说明我们已经成功安装了redis。
 
 
 
-
-# 2.Redis 配置
+# 3.Redis 配置
 
 Redis 的配置文件位于 Redis 安装目录下，文件名为 **redis.conf**(Windows 名为 redis.windows.conf)。
 
@@ -235,3 +361,257 @@ redis.conf 配置项说明如下：
 | 28   | `hash-max-zipmap-entries 64 hash-max-zipmap-value 512`       | 指定在超过一定的数量或者最大的元素超过某一临界值时，采用一种特殊的哈希算法 |
 | 29   | `activerehashing yes`                                        | 指定是否激活重置哈希，默认为开启（后面在介绍 Redis 的哈希算法时具体介绍） |
 | 30   | `include /path/to/local.conf`                                | 指定包含其它的配置文件，可以在同一主机上多个Redis实例之间使用同一份配置文件，而同时各个实例又拥有自己的特定配置文件 |
+
+# 4.Redis 数据类型
+
+Redis支持五种数据类型：string（字符串），hash（哈希），list（列表），set（集合）及zset(sorted set：有序集合)。
+
+------
+
+## String（字符串）
+
+string 是 redis 最基本的类型，你可以理解成与 Memcached 一模一样的类型，一个 key 对应一个 value。
+
+string 类型是二进制安全的。意思是 redis 的 string 可以包含任何数据。比如jpg图片或者序列化的对象。
+
+string 类型是 Redis 最基本的数据类型，string 类型的值最大能存储 512MB。
+
+### 实例
+
+```
+redis 127.0.0.1:6379> SET runoob "菜鸟教程"
+OK
+redis 127.0.0.1:6379> GET runoob
+"菜鸟教程"
+```
+
+在以上实例中我们使用了 Redis 的 **SET** 和 **GET** 命令。键为 runoob，对应的值为 **菜鸟教程**。
+
+**注意：**一个键最大能存储 512MB。
+
+------
+
+## Hash（哈希）
+
+Redis hash 是一个键值(key=>value)对集合。
+
+Redis hash 是一个 string 类型的 field 和 value 的映射表，hash 特别适合用于存储对象。
+
+### 实例
+
+**DEL runoob** 用于删除前面测试用过的 key，不然会报错：**(error) WRONGTYPE Operation against a key holding the wrong kind of value**
+
+![img](https://www.runoob.com/wp-content/uploads/2014/11/B104156B-7270-4D03-8EB3-B72D4022ED78.jpg)
+
+```
+redis 127.0.0.1:6379> DEL runoob
+redis 127.0.0.1:6379> HMSET runoob field1 "Hello" field2 "World"
+"OK"
+redis 127.0.0.1:6379> HGET runoob field1
+"Hello"
+redis 127.0.0.1:6379> HGET runoob field2
+"World"
+```
+
+实例中我们使用了 Redis **HMSET, HGET** 命令，**HMSET** 设置了两个 **field=>value** 对, HGET 获取对应 **field** 对应的 **value**。
+
+每个 hash 可以存储 232 -1 键值对（40多亿）。
+
+
+
+------
+
+## List（列表）
+
+Redis 列表是简单的字符串列表，按照插入顺序排序。你可以添加一个元素到列表的头部（左边）或者尾部（右边）。
+
+### 实例
+
+```
+redis 127.0.0.1:6379> DEL runoob
+redis 127.0.0.1:6379> lpush runoob redis
+(integer) 1
+redis 127.0.0.1:6379> lpush runoob mongodb
+(integer) 2
+redis 127.0.0.1:6379> lpush runoob rabitmq
+(integer) 3
+redis 127.0.0.1:6379> lrange runoob 0 10
+1) "rabitmq"
+2) "mongodb"
+3) "redis"
+redis 127.0.0.1:6379>
+```
+
+列表最多可存储 232 - 1 元素 (4294967295, 每个列表可存储40多亿)。
+
+------
+
+## Set（集合）
+
+Redis 的 Set 是 string 类型的无序集合。
+
+集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是 O(1)。
+
+### sadd 命令
+
+添加一个 string 元素到 key 对应的 set 集合中，成功返回 1，如果元素已经在集合中返回 0。
+
+```
+sadd key member
+```
+
+### 实例
+
+```
+redis 127.0.0.1:6379> DEL runoob
+redis 127.0.0.1:6379> sadd runoob redis
+(integer) 1
+redis 127.0.0.1:6379> sadd runoob mongodb
+(integer) 1
+redis 127.0.0.1:6379> sadd runoob rabitmq
+(integer) 1
+redis 127.0.0.1:6379> sadd runoob rabitmq
+(integer) 0
+redis 127.0.0.1:6379> smembers runoob
+
+1) "redis"
+2) "rabitmq"
+3) "mongodb"
+```
+
+**注意：**以上实例中 rabitmq 添加了两次，但根据集合内元素的唯一性，第二次插入的元素将被忽略。
+
+集合中最大的成员数为 232 - 1(4294967295, 每个集合可存储40多亿个成员)。
+
+------
+
+## zset(sorted set：有序集合)
+
+Redis zset 和 set 一样也是string类型元素的集合,且不允许重复的成员。
+
+
+
+不同的是每个元素都会关联一个double类型的分数。redis正是通过分数来为集合中的成员进行从小到大的排序。
+
+zset的成员是唯一的,但分数(score)却可以重复。
+
+### zadd 命令
+
+添加元素到集合，元素在集合中存在则更新对应score
+
+```
+zadd key score member 
+```
+
+### 实例
+
+```
+redis 127.0.0.1:6379> DEL runoob
+redis 127.0.0.1:6379> zadd runoob 0 redis
+(integer) 1
+redis 127.0.0.1:6379> zadd runoob 0 mongodb
+(integer) 1
+redis 127.0.0.1:6379> zadd runoob 0 rabitmq
+(integer) 1
+redis 127.0.0.1:6379> zadd runoob 0 rabitmq
+(integer) 0
+redis 127.0.0.1:6379> > ZRANGEBYSCORE runoob 0 1000
+1) "mongodb"
+2) "rabitmq"
+3) "redis"
+```
+
+
+
+### 各个数据类型应用场景：
+
+| 类型                 | 简介                                                   | 特性                                                         | 场景                                                         |
+| :------------------- | :----------------------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| String(字符串)       | 二进制安全                                             | 可以包含任何数据,比如jpg图片或者序列化的对象,一个键最大能存储512M | ---                                                          |
+| Hash(字典)           | 键值对集合,即编程语言中的Map类型                       | 适合存储对象,并且可以像数据库中update一个属性一样只修改某一项属性值(Memcached中需要取出整个字符串反序列化成对象修改完再序列化存回去) | 存储、读取、修改用户属性                                     |
+| List(列表)           | 链表(双向链表)                                         | 增删快,提供了操作某一段元素的API                             | 1,最新消息排行等功能(比如朋友圈的时间线) 2,消息队列          |
+| Set(集合)            | 哈希表实现,元素不重复                                  | 1、添加、删除,查找的复杂度都是O(1) 2、为集合提供了求交集、并集、差集等操作 | 1、共同好友 2、利用唯一性,统计访问网站的所有独立ip 3、好友推荐时,根据tag求交集,大于某个阈值就可以推荐 |
+| Sorted Set(有序集合) | 将Set中的元素增加一个权重参数score,元素按score有序排列 | 数据插入集合时,已经进行天然排序                              | 1、排行榜 2、带权重的消息队列                                |
+
+注意：Redis支持多个数据库，并且每个数据库的数据是隔离的不能共享，并且基于单机才有，如果是集群就没有数据库的概念。
+
+Redis是一个字典结构的存储服务器，而实际上一个Redis实例提供了多个用来存储数据的字典，客户端可以指定将数据存储在哪个字典中。这与我们熟知的在一个关系数据库实例中可以创建多个数据库类似，所以可以将其中的每个字典都理解成一个独立的数据库。
+
+每个数据库对外都是一个从0开始的递增数字命名，Redis默认支持16个数据库（可以通过配置文件支持更多，无上限），可以通过配置databases来修改这一数字。客户端与Redis建立连接后会自动选择0号数据库，不过可以随时使用SELECT命令更换数据库，如要选择1号数据库：
+
+```
+redis> SELECT 1
+OK
+redis [1] > GET foo
+(nil)
+```
+
+然而这些以数字命名的数据库又与我们理解的数据库有所区别。首先Redis不支持自定义数据库的名字，每个数据库都以编号命名，开发者必须自己记录哪些数据库存储了哪些数据。另外Redis也不支持为每个数据库设置不同的访问密码，所以一个客户端要么可以访问全部数据库，要么连一个数据库也没有权限访问。最重要的一点是多个数据库之间并不是完全隔离的，比如FLUSHALL命令可以清空一个Redis实例中所有数据库中的数据。综上所述，这些数据库更像是一种命名空间，而不适宜存储不同应用程序的数据。比如可以使用0号数据库存储某个应用生产环境中的数据，使用1号数据库存储测试环境中的数据，但不适宜使用0号数据库存储A应用的数据而使用1号数据库B应用的数据，不同的应用应该使用不同的Redis实例存储数据。由于Redis非常轻量级，一个空Redis实例占用的内在只有1M左右，所以不用担心多个Redis实例会额外占用很多内存
+
+
+
+
+
+# 5.Redis 命令
+
+Redis 命令用于在 redis 服务上执行操作。
+
+要在 redis 服务上执行命令需要一个 redis 客户端。Redis 客户端在我们之前下载的的 redis 的安装包中。
+
+### 语法
+
+Redis 客户端的基本语法为：
+
+```
+$ redis-cli
+```
+
+### 实例
+
+以下实例讲解了如何启动 redis 客户端：
+
+启动 redis 服务器，打开终端并输入命令 **redis-cli**，该命令会连接本地的 redis 服务。
+
+```
+$ redis-cli
+redis 127.0.0.1:6379>
+redis 127.0.0.1:6379> PING
+
+PONG
+```
+
+在以上实例中我们连接到本地的 redis 服务并执行 **PING** 命令，该命令用于检测 redis 服务是否启动。
+
+------
+
+## 在远程服务上执行命令
+
+如果需要在远程 redis 服务上执行命令，同样我们使用的也是 **redis-cli** 命令。
+
+### 语法
+
+```
+$ redis-cli -h host -p port -a password
+```
+
+### 实例
+
+以下实例演示了如何连接到主机为 127.0.0.1，端口为 6379 ，密码为 mypass 的 redis 服务上。
+
+```
+$redis-cli -h 127.0.0.1 -p 6379 -a "mypass"
+redis 127.0.0.1:6379>
+redis 127.0.0.1:6379> PING
+
+PONG
+```
+
+有时候会有中文乱码。
+
+要在 redis-cli 后面加上 --raw
+
+```
+redis-cli --raw
+```
+
+就可以避免中文乱码了。
